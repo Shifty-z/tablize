@@ -1,10 +1,6 @@
 package types
 
 ProgramArgs :: struct {
-	should_decorate_table_border_north: bool,  // Whether the northern part of the table should have some visible decorator.
-	should_decorate_table_border_south: bool,  // Whether the southern part of the table should have some visible decorator.
-	should_decorate_table_border_east: bool,   // Whether the eastern part of the table should have some visible decorator.
-	should_decorate_table_border_west: bool,   // Whether the western part of the table should have some visible decorator.
 	should_decorate_table_footer_row: bool,    // Whether there should be a horizontal decorator beneath all column headers.
 	decorator_vertical: rune,                  // When a vertical border is drawn, what symbol should be used?
 	decorator_horizontal: rune,                // When a horizontal border is drawn, what symbol should be used?
