@@ -102,13 +102,12 @@ args: types.ProgramArgs) -> string {
 
 	// DRAW: column headers
 	{
-	// TODO: Rename idx
-		for idx := 0; idx < number_of_columns; idx += 1 {
-			column_header := parsed_data[idx]
+		for column_position := 0; column_position < number_of_columns; column_position += 1 {
+			column_header := parsed_data[column_position]
 
 			// First element should draw its left border and right border
 			// every other element should just draw its right border
-			is_first_element_in_row := 0 == idx
+			is_first_element_in_row := 0 == column_position
 			if is_first_element_in_row {
 				strings.write_rune(&table, args.decorator_vertical)
 			}
