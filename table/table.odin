@@ -9,18 +9,6 @@ LITERAL_NEWLINE :: '\n'
 LITERAL_WHITESPACE :: ' '
 LITERAL_COMMA :: ','
 
-/*
-TERMINOLOGY
-	Cell: Any content-type located at row X and column Y.
-	Table Headers :  If enabled, whatever appears one row above Column Headers.
-	Column Headers: Whatever appears above data cell columns.
-	Column Footers: If enabled, whatever appears one row below Column Headers
-	Data cell: Any cell that contains data and isn't a decorator-like rune.
-	Vertical Delimiters: What separated inner data cells (AKA: Cell Separators).
-	Border Decorations : Decorator-like runes that are on the north, east,
-		             south, or western side of a table.
-*/
-
 create :: proc (unparsed_csv_data: string, args: types.ProgramArgs) -> (parsed_data: []string, number_of_rows: int, number_of_columns: int) {
 	lines, error_allocation := strings.split_lines(unparsed_csv_data)
 	defer delete(lines)
