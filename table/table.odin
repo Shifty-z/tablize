@@ -144,18 +144,17 @@ args: types.ProgramArgs) -> string {
 		strings.write_byte(&table, LITERAL_NEWLINE)
 	}
 
-	// TODO: Rename this to column_counter
-	col_idx := 0
+	column_counter := 0
 	for i := number_of_columns; i < len(parsed_data); i += 1 {
 		data_cell_element := parsed_data[i]
 
-		should_print_on_newline := col_idx == number_of_columns
+		should_print_on_newline := column_counter == number_of_columns
 		if should_print_on_newline {
-			col_idx = 0
+			column_counter = 0
 			strings.write_byte(&table, LITERAL_NEWLINE)
 		}
 
-		is_first_element_in_row := 0 == col_idx
+		is_first_element_in_row := 0 == column_counter
 		if is_first_element_in_row {
 			strings.write_rune(&table, args.decorator_vertical)
 		}
@@ -163,7 +162,7 @@ args: types.ProgramArgs) -> string {
 		// TODO: Determine whether this is required. You already calculated
 		// the widest possible column WITHOUT a trailing whitespace
 		// so this should always be zero.
-		number_of_spaces := 0 if len(data_cell_element) >= widest_column_size else widest_column_size - len(element)
+		number_of_spaces := 0 if len(data_cell_element) >= widest_column_size else widest_column_size - len(data_cell_element)
 
 		strings.write_byte(&table, LITERAL_WHITESPACE) // Just padding
 		strings.write_string(&table, data_cell_element)
@@ -172,7 +171,7 @@ args: types.ProgramArgs) -> string {
 
 		strings.write_rune(&table, args.decorator_vertical)
 
-		col_idx += 1
+		column_counter += 1
 	}
 
 	strings.write_byte(&table, LITERAL_NEWLINE)
