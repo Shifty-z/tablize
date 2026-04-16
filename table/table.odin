@@ -22,7 +22,7 @@ create :: proc (unparsed_csv_data: string, args: types.ProgramArgs) -> (parsed_d
 	// this tells you when to enter the next colum
 	number_of_columns = count_number_of_columns(lines[0])
 	number_of_rows = len(lines)
-	parsed_data = parse_csv_lines(&lines, number_of_columns, number_of_rows)
+	parsed_data = parse_csv_lines(&lines, number_of_rows, number_of_columns)
 
 	return
 }
@@ -43,13 +43,10 @@ parse_csv_lines :: proc (csv_lines: ^[]string, number_of_rows, number_of_columns
 			continue
 		}
 
-		// This is equivalent to append(&parsed_data, ..results)
-		index_increment := 0
-		for ; index_increment < len(csv_header); index_increment += 1 {
-			parsed_data[parsed_data_index + index_increment] = csv_header[index_increment]
+		for header_counter := 0; header_counter < len(csv_header); header_counter += 1 {
+			parsed_data[parsed_data_index] = csv_header[header_counter]
+			parsed_data_index += 1
 		}
-
-		parsed_data_index += index_increment
 	}
 
 	return parsed_data
