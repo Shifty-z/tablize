@@ -109,13 +109,7 @@ args: types.ProgramArgs) -> string {
 				strings.write_rune(&table, args.decorator_vertical)
 			}
 
-			// Can you use the uncommented out code you have
-			// or do you need the 1 if (...) else (...) line?
-			// You already calculate the widest column size, so
-			// you shouldn't need the 1 if (...) else (...) code
-			// widest_column_size - len(column_header)?
-			// number_of_spaces := 1 if len(column_header) >= widest_column_size else widest_column_size - len(column_header)
-			number_of_spaces := widest_column_size - len(column_header)
+			number_of_spaces := widest_column_size - strings.rune_count(column_header)
 
 			strings.write_byte(&table, LITERAL_WHITESPACE) // Just padding
 			strings.write_string(&table, column_header)
@@ -132,9 +126,9 @@ args: types.ProgramArgs) -> string {
 	if args.should_decorate_table_footer_row {
 		table_footer_row := decorate_table_line(
 		total_number_of_runes_per_row,
-		'├',
+		args.decorator_table_three_way_intersection_west,
 		args.decorator_horizontal,
-		'┤',
+		args.decorator_table_three_way_intersection_east
 		)
 
 		strings.write_string(&table, table_footer_row)
@@ -159,7 +153,9 @@ args: types.ProgramArgs) -> string {
 		// TODO: Determine whether this is required. You already calculated
 		// the widest possible column WITHOUT a trailing whitespace
 		// so this should always be zero.
-		number_of_spaces := 0 if len(data_cell_element) >= widest_column_size else widest_column_size - len(data_cell_element)
+		runes_in_data_cell_element := strings.rune_count(data_cell_element)
+		number_of_spaces := 0 if runes_in_data_cell_element >= widest_column_size else widest_column_size - runes_in_data_cell_element
+		fmt.printfln("Number of spaces: %d", number_of_spaces)
 
 		strings.write_byte(&table, LITERAL_WHITESPACE) // Just padding
 		strings.write_string(&table, data_cell_element)
