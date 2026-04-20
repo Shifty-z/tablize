@@ -10,4 +10,6 @@ ProgramArgs :: struct {
 	decorator_table_south_east_corner: rune,   // Rune used to draw this corner
 	decorator_table_south_west_corner: rune,   // Rune used to draw this corner
 	should_use_column_relative_maximum_widths: bool, // Whether the maximum width should be table-wide or per-column.
+	decorator_table_three_way_intersection_west: rune,
+	decorator_table_three_way_intersection_east: rune,
 }
