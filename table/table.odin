@@ -136,9 +136,8 @@ args: types.ProgramArgs) -> string {
 	}
 
 	column_counter := 0
-	// TODO: Rename this `i` to something else.
-	for i := number_of_columns; i < len(parsed_data); i += 1 {
-		data_cell_element := parsed_data[i]
+	for parsed_data_count := number_of_columns; parsed_data_count < len(parsed_data); parsed_data_count += 1 {
+		data_cell_element := parsed_data[parsed_data_count]
 
 		should_print_on_newline := column_counter == number_of_columns
 		if should_print_on_newline {
