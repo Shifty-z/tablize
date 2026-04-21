@@ -131,14 +131,14 @@ main :: proc() {
 		}
 
 		for data_source in &data_sources {
-			parsed_data, number_of_rows, number_of_columns := table.create(cast(string)data_source, args)
+			parsed_data, number_of_rows, number_of_columns := table.create(cast(string)data_source)
 			printable_table := table.draw_table(parsed_data, number_of_rows, number_of_columns, args)
 			fmt.println(printable_table)
 		}
 		return
 	}
 
-	parsed_data, number_of_rows, number_of_columns := table.create(cast(string)data, args)
+	parsed_data, number_of_rows, number_of_columns := table.create(cast(string)data)
 	fmt.printfln("MAIN :: Number of rows: %d; Number of columns: %d", number_of_rows, number_of_columns)
 	printable_table := table.draw_table(parsed_data, number_of_rows, number_of_columns, args)
 	fmt.println(printable_table)

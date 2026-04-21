@@ -9,7 +9,7 @@ LITERAL_NEWLINE :: '\n'
 LITERAL_WHITESPACE :: ' '
 LITERAL_COMMA :: ','
 
-create :: proc (unparsed_csv_data: string, args: types.ProgramArgs) -> (parsed_data: []string, number_of_rows: int, number_of_columns: int) {
+create :: proc (unparsed_csv_data: string) -> (parsed_data: []string, number_of_rows: int, number_of_columns: int) {
 	lines, error_allocation := strings.split_lines(unparsed_csv_data)
 	defer delete(lines)
 
