@@ -101,29 +101,27 @@ args: types.ProgramArgs) -> string {
 	//
 	// DRAW: column headers
 	//
-	{
-		for column_position := 0; column_position < number_of_columns; column_position += 1 {
-			column_header := parsed_data[column_position]
+	for column_header_position := 0; column_header_position < number_of_columns; column_header_position += 1 {
+		column_header := parsed_data[column_header_position]
 
-			// First element should draw its left border and right border
-			// every other element should just draw its right border
-			is_first_element_in_row := 0 == column_position
-			if is_first_element_in_row {
-				strings.write_rune(&table, args.table_runes.vertical)
-			}
-
-			number_of_spaces := widest_column_size - strings.rune_count(column_header)
-
-			strings.write_byte(&table, LITERAL_WHITESPACE) // Just padding
-			strings.write_string(&table, column_header)
-			whitespace := strings.repeat(" ", number_of_spaces)
-			strings.write_string(&table, whitespace)
-
+		// First element should draw its left border and right border
+		// every other element should just draw its right border
+		is_first_element_in_row := 0 == column_header_position
+		if is_first_element_in_row {
 			strings.write_rune(&table, args.table_runes.vertical)
 		}
 
-		strings.write_byte(&table, LITERAL_NEWLINE)
+		number_of_spaces := widest_column_size - strings.rune_count(column_header)
+
+		strings.write_byte(&table, LITERAL_WHITESPACE) // Just padding
+		strings.write_string(&table, column_header)
+		whitespace := strings.repeat(" ", number_of_spaces)
+		strings.write_string(&table, whitespace)
+
+		strings.write_rune(&table, args.table_runes.vertical)
 	}
+	strings.write_byte(&table, LITERAL_NEWLINE)
+
 
 	//
 	// DRAW: column footer row
