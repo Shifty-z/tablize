@@ -86,18 +86,21 @@ args: types.ProgramArgs) -> string {
 
 	table := strings.builder_make(0, total_number_of_runes_per_row * number_of_rows)
 
-	// DRAW: table's northern decorations
+	//
+	// DRAW: table northern border
+	//
 	table_border_north := decorate_table_line(
 	total_number_of_runes_per_row,
 	args.table_runes.corner_north_west,
 	args.table_runes.horizontal,
 	args.table_runes.corner_north_east
 	)
-
 	strings.write_string(&table, table_border_north)
 	strings.write_byte(&table, LITERAL_NEWLINE)
 
+	//
 	// DRAW: column headers
+	//
 	{
 		for column_position := 0; column_position < number_of_columns; column_position += 1 {
 			column_header := parsed_data[column_position]
@@ -122,7 +125,9 @@ args: types.ProgramArgs) -> string {
 		strings.write_byte(&table, LITERAL_NEWLINE)
 	}
 
-	// DRAW: footer row
+	//
+	// DRAW: column footer row
+	//
 	if args.should_decorate_table_footer_row {
 		table_footer_row := decorate_table_line(
 		total_number_of_runes_per_row,
@@ -135,6 +140,9 @@ args: types.ProgramArgs) -> string {
 		strings.write_byte(&table, LITERAL_NEWLINE)
 	}
 
+	//
+	// DRAW: table body content
+	//
 	column_counter := 0
 	for parsed_data_count := number_of_columns; parsed_data_count < len(parsed_data); parsed_data_count += 1 {
 		data_cell_element := parsed_data[parsed_data_count]
@@ -169,6 +177,9 @@ args: types.ProgramArgs) -> string {
 
 	strings.write_byte(&table, LITERAL_NEWLINE)
 
+	//
+	// DRAW: table southern border
+	//
 	table_border_southern_line := decorate_table_line(
 	total_number_of_runes_per_row,
 	args.table_runes.corner_south_west,
@@ -176,7 +187,6 @@ args: types.ProgramArgs) -> string {
 	args.table_runes.corner_south_east
 	)
 	strings.write_string(&table, table_border_southern_line)
-
 	strings.write_byte(&table, LITERAL_NEWLINE)
 
 
