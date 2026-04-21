@@ -89,9 +89,9 @@ args: types.ProgramArgs) -> string {
 	// DRAW: table's northern decorations
 	table_border_north := decorate_table_line(
 	total_number_of_runes_per_row,
-	args.decorator_table_north_west_corner,
-	args.decorator_horizontal,
-	args.decorator_table_north_east_corner
+	args.table_runes.corner_north_west,
+	args.table_runes.horizontal,
+	args.table_runes.corner_north_east
 	)
 
 	strings.write_string(&table, table_border_north)
@@ -106,7 +106,7 @@ args: types.ProgramArgs) -> string {
 			// every other element should just draw its right border
 			is_first_element_in_row := 0 == column_position
 			if is_first_element_in_row {
-				strings.write_rune(&table, args.decorator_vertical)
+				strings.write_rune(&table, args.table_runes.vertical)
 			}
 
 			number_of_spaces := widest_column_size - strings.rune_count(column_header)
@@ -116,7 +116,7 @@ args: types.ProgramArgs) -> string {
 			whitespace := strings.repeat(" ", number_of_spaces)
 			strings.write_string(&table, whitespace)
 
-			strings.write_rune(&table, args.decorator_vertical)
+			strings.write_rune(&table, args.table_runes.vertical)
 		}
 
 		strings.write_byte(&table, LITERAL_NEWLINE)
@@ -126,9 +126,9 @@ args: types.ProgramArgs) -> string {
 	if args.should_decorate_table_footer_row {
 		table_footer_row := decorate_table_line(
 		total_number_of_runes_per_row,
-		args.decorator_table_three_way_intersection_west,
-		args.decorator_horizontal,
-		args.decorator_table_three_way_intersection_east
+		args.table_runes.column_footer_three_way_intersection_west,
+		args.table_runes.horizontal,
+		args.table_runes.column_footer_three_way_intersection_east
 		)
 
 		strings.write_string(&table, table_footer_row)
@@ -136,6 +136,7 @@ args: types.ProgramArgs) -> string {
 	}
 
 	column_counter := 0
+	// TODO: Rename this `i` to something else.
 	for i := number_of_columns; i < len(parsed_data); i += 1 {
 		data_cell_element := parsed_data[i]
 
@@ -147,7 +148,7 @@ args: types.ProgramArgs) -> string {
 
 		is_first_element_in_row := 0 == column_counter
 		if is_first_element_in_row {
-			strings.write_rune(&table, args.decorator_vertical)
+			strings.write_rune(&table, args.table_runes.vertical)
 		}
 
 		// TODO: Determine whether this is required. You already calculated
@@ -162,7 +163,7 @@ args: types.ProgramArgs) -> string {
 		whitespace := strings.repeat(" ", number_of_spaces)
 		strings.write_string(&table, whitespace)
 
-		strings.write_rune(&table, args.decorator_vertical)
+		strings.write_rune(&table, args.table_runes.vertical)
 
 		column_counter += 1
 	}
@@ -171,9 +172,9 @@ args: types.ProgramArgs) -> string {
 
 	table_border_southern_line := decorate_table_line(
 	total_number_of_runes_per_row,
-	args.decorator_table_south_west_corner,
-	args.decorator_horizontal,
-	args.decorator_table_south_east_corner
+	args.table_runes.corner_south_west,
+	args.table_runes.horizontal,
+	args.table_runes.corner_south_east
 	)
 	strings.write_string(&table, table_border_southern_line)
 

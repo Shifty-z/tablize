@@ -68,15 +68,6 @@ main :: proc() {
 
 	args := types.ProgramArgs {
 		should_decorate_table_footer_row  = true,
-		decorator_vertical = decorator_vertical,
-		decorator_horizontal = decorator_horizontal,
-		decorator_column_header_border_south = decorator_column_header_border_south,
-		decorator_table_north_west_corner = decorator_table_north_west_corner,
-		decorator_table_north_east_corner = decorator_table_north_east_corner,
-		decorator_table_south_east_corner = decorator_table_south_east_corner,
-		decorator_table_south_west_corner = decorator_table_south_west_corner,
-		decorator_table_three_way_intersection_west = decorator_table_three_way_intersection_west,
-		decorator_table_three_way_intersection_east = decorator_table_three_way_intersection_east,
 		should_use_column_relative_maximum_widths = true,
 		table_runes = table_glyphs
 	}
