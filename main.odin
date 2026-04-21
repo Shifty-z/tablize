@@ -54,6 +54,18 @@ main :: proc() {
 		decorator_table_three_way_intersection_east = '+'
 	}
 
+	table_glyphs := types.TableDrawingRunes {
+		vertical = decorator_vertical,
+		horizontal = decorator_horizontal,
+		column_header_border_south = decorator_column_header_border_south,
+		column_footer_three_way_intersection_west = decorator_table_three_way_intersection_west,
+		column_footer_three_way_intersection_east = decorator_table_three_way_intersection_east,
+		corner_north_west = decorator_table_north_west_corner,
+		corner_north_east = decorator_table_north_east_corner,
+		corner_south_west = decorator_table_south_west_corner,
+		corner_south_east = decorator_table_south_east_corner,
+	}
+
 	args := types.ProgramArgs {
 		should_decorate_table_footer_row  = true,
 		decorator_vertical = decorator_vertical,
@@ -65,7 +77,8 @@ main :: proc() {
 		decorator_table_south_west_corner = decorator_table_south_west_corner,
 		decorator_table_three_way_intersection_west = decorator_table_three_way_intersection_west,
 		decorator_table_three_way_intersection_east = decorator_table_three_way_intersection_east,
-		should_use_column_relative_maximum_widths = true
+		should_use_column_relative_maximum_widths = true,
+		table_runes = table_glyphs
 	}
 
 	when TABLIZE_DBG {
