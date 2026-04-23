@@ -66,7 +66,7 @@ args: types.ProgramArgs) -> string {
 	runes_per_row_without_decorations_or_space_offsets :=
 	widest_column_size * number_of_columns
 
-	// This is 2 because of some flags you removed
+	// This is 2 because of some flags you removed (west and east border)
 	number_of_border_decorations_per_row := 2
 
 	// Each data cell starts with a leading whitespace for padding
