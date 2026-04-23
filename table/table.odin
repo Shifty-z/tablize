@@ -72,9 +72,12 @@ args: types.ProgramArgs) -> string {
 	// Each data cell starts with a leading whitespace for padding
 	number_of_leading_whitespaces_per_row := number_of_columns - 1
 
-	// Each data cell adds its own vertical delimiter, except for the last and first
+	// Subtracting the the number of border decorations per row from
+	// the total number of columns outputs how many non-border data cell
+	// vertical delimiters there should be. There can only be two border
+	// decorations; one on the west and one on the east.
 	number_of_vertical_delimiters_per_row :=
-	number_of_leading_whitespaces_per_row - number_of_border_decorations_per_row
+	number_of_columns - number_of_border_decorations_per_row
 
 	// The maximum number of characters any row will display
 	// For example, the header, line beneath the header, and the table footer
@@ -222,10 +225,7 @@ decorate_table_line :: proc (total_length_of_row: int, decorator_start, decorato
 
 	strings.write_rune(&decorator, decorator_start)
 
-	// I think I'm adding one here because of the leading whitespace before
-	// each table element
-	fill_amount := total_length_of_row + 1
-	for counter := 0; counter < fill_amount; counter += 1 {
+	for counter := 0; counter < total_length_of_row; counter += 1 {
 		strings.write_rune(&decorator, decorator_middle)
 	}
 
