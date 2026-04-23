@@ -156,17 +156,13 @@ args: types.ProgramArgs) -> string {
 			strings.write_rune(&table, args.table_runes.vertical)
 		}
 
-		// TODO: Determine whether this is required. You already calculated
-		// the widest possible column WITHOUT a trailing whitespace
-		// so this should always be zero.
 		runes_in_data_cell_element := strings.rune_count(data_cell_element)
-		number_of_spaces := 0 if runes_in_data_cell_element >= widest_column_size else widest_column_size - runes_in_data_cell_element
-		fmt.printfln("Number of spaces: %d", number_of_spaces)
+		number_of_trailing_spaces := widest_column_size - runes_in_data_cell_element
 
 		strings.write_byte(&table, LITERAL_WHITESPACE) // Just padding
 		strings.write_string(&table, data_cell_element)
-		whitespace := strings.repeat(" ", number_of_spaces)
-		strings.write_string(&table, whitespace)
+		whitespace_padding := strings.repeat(" ", number_of_trailing_spaces)
+		strings.write_string(&table, whitespace_padding)
 
 		strings.write_rune(&table, args.table_runes.vertical)
 
