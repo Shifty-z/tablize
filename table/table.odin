@@ -56,12 +56,13 @@ draw_table :: proc (parsed_data: []string, number_of_rows, number_of_columns: in
 args: types.ProgramArgs) -> string {
 // This is initialized as such because I want data cells to have
 // at least one whitespace after their content. It's easier to read
-	number_of_trailing_whitespace_runes_per_data_cell := 1
+	per_cell_leading_whitespace_runes :: 1
+	per_cell_trailing_whitespace_runes :: 1
 
 	// The widest any column will be is this.
 	// You pad each data cell with leading whitespace, so you're wrong about the above 😂
 	widest_column_size := get_max_col_width(parsed_data) +
-	number_of_trailing_whitespace_runes_per_data_cell
+	per_cell_trailing_whitespace_runes
 
 	runes_per_row_without_decorations_or_space_offsets :=
 	widest_column_size * number_of_columns
@@ -104,15 +105,9 @@ args: types.ProgramArgs) -> string {
 	//
 	// DRAW: column headers
 	//
+	strings.write_rune(&table, args.table_runes.vertical)
 	for column_header_position := 0; column_header_position < number_of_columns; column_header_position += 1 {
 		column_header := parsed_data[column_header_position]
-
-		// First element should draw its left border and right border
-		// every other element should just draw its right border
-		is_first_element_in_row := 0 == column_header_position
-		if is_first_element_in_row {
-			strings.write_rune(&table, args.table_runes.vertical)
-		}
 
 		number_of_spaces := widest_column_size - strings.rune_count(column_header)
 
