@@ -98,13 +98,13 @@ args: types.ProgramArgs) -> string {
 			strings.write_rune(&horizontal_line_builder, args.table_runes.horizontal)
 		}
 	}
-	border_horizontal_data_cell_content := strings.to_string(horizontal_line_builder)
+	table_horizontal_line_without_corners := strings.to_string(horizontal_line_builder)
 
 	//
 	// DRAW: table northern border
 	//
 	strings.write_rune(&table, args.table_runes.corner_north_west)
-	strings.write_string(&table, border_horizontal_data_cell_content)
+	strings.write_string(&table, table_horizontal_line_without_corners)
 	strings.write_rune(&table, args.table_runes.corner_north_east)
 	strings.write_byte(&table, LITERAL_NEWLINE)
 
@@ -131,7 +131,7 @@ args: types.ProgramArgs) -> string {
 	//
 	if args.should_decorate_table_footer_row {
 		strings.write_rune(&table, args.table_runes.column_footer_three_way_intersection_west)
-		strings.write_string(&table, border_horizontal_data_cell_content)
+		strings.write_string(&table, table_horizontal_line_without_corners)
 		strings.write_rune(&table, args.table_runes.column_footer_three_way_intersection_east)
 		strings.write_byte(&table, LITERAL_NEWLINE)
 	}
@@ -175,7 +175,7 @@ args: types.ProgramArgs) -> string {
 	// DRAW: table southern border
 	//
 	strings.write_rune(&table, args.table_runes.corner_south_west)
-	strings.write_string(&table, border_horizontal_data_cell_content)
+	strings.write_string(&table, table_horizontal_line_without_corners)
 	strings.write_rune(&table, args.table_runes.corner_south_east)
 	strings.write_byte(&table, LITERAL_NEWLINE)
 
