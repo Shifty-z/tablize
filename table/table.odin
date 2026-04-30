@@ -33,6 +33,11 @@ parse_csv_lines :: proc (csv_lines: ^[]string, number_of_rows, number_of_columns
 	array_length := number_of_columns * number_of_rows
 	parsed_data := make([]string, array_length)
 
+	// You want each cell to begin and end with one whitespace rune, so you must
+	// build that. You cannot inline concatenate strings in Odin using "+"
+	data_cell_builder := strings.builder_make()
+	defer strings.builder_destroy(&data_cell_builder)
+
 	parsed_data_index := 0
 	for line in csv_lines {
 		csv_header, error_splitting_string := strings.split(line, ",")
@@ -44,7 +49,16 @@ parse_csv_lines :: proc (csv_lines: ^[]string, number_of_rows, number_of_columns
 		}
 
 		for header_counter := 0; header_counter < len(csv_header); header_counter += 1 {
-			parsed_data[parsed_data_index] = csv_header[header_counter]
+			strings.write_rune  (&data_cell_builder, LITERAL_WHITESPACE)
+			strings.write_string(&data_cell_builder, csv_header[header_counter])
+			strings.write_rune  (&data_cell_builder, LITERAL_WHITESPACE)
+
+			// Clone the result of to_string to "own" the string, and because string
+			// builder re-uses the backing buffer. Clearing it resets length, so you
+			// will trample your own data if you don't clone.
+			parsed_data[parsed_data_index] = strings.clone(strings.to_string(data_cell_builder))
+
+			strings.builder_reset(&data_cell_builder)
 			parsed_data_index += 1
 		}
 	}
@@ -54,52 +68,44 @@ parse_csv_lines :: proc (csv_lines: ^[]string, number_of_rows, number_of_columns
 
 draw_table :: proc (parsed_data: []string, number_of_rows, number_of_columns: int,
 args: types.ProgramArgs) -> string {
-// This is initialized as such because I want data cells to have
-// at least one whitespace after their content. It's easier to read
-	per_cell_leading_whitespace_runes :: 1
-	per_cell_trailing_whitespace_runes :: 1
 
-	// The widest any column will be is this.
-	// You pad each data cell with leading whitespace, so you're wrong about the above 😂
-	widest_column_size := get_max_col_width(parsed_data) +
-	per_cell_trailing_whitespace_runes
+	per_row_delimiters_vertical := number_of_columns + 1
+	per_row_total_whitespace_leading := number_of_columns
+	per_row_total_whitespace_trailing := number_of_columns
+	widest_column_size := get_max_column_width(parsed_data)
 
-	runes_per_row_without_decorations_or_space_offsets :=
-	widest_column_size * number_of_columns
+	// This is the number of runes from the CSV file's row. No stylized runes included.
+	per_row_rune_count := number_of_columns * widest_column_size
+	per_row_total_number_of_runes := per_row_total_whitespace_leading +
+	per_row_delimiters_vertical + per_row_rune_count + per_row_total_whitespace_trailing
 
-	// This is 2 because of some flags you removed (west and east border)
-	number_of_border_decorations_per_row := 2
+	table := strings.builder_make(0,  per_row_total_number_of_runes * number_of_rows)
 
-	// Each data cell starts with a leading whitespace for padding
-	number_of_leading_whitespaces_per_row := number_of_columns - 1
+	//
+	// Horizontal border data cells all use the same rune the same number of times (widest_column_size)
+	// so convert that into a reusable string
+	//
+	sb := strings.builder_make() // TODO: Rename this variable.
+	defer strings.builder_destroy(&sb)
+	for column_position := 0; column_position < number_of_columns; column_position += 1 {
 
-	// Subtracting the the number of border decorations per row from
-	// the total number of columns outputs how many non-border data cell
-	// vertical delimiters there should be. There can only be two border
-	// decorations; one on the west and one on the east.
-	number_of_vertical_delimiters_per_row :=
-	number_of_columns - number_of_border_decorations_per_row
+		for fill_position := 0; fill_position < widest_column_size; fill_position += 1 {
+			strings.write_rune(&sb, args.table_runes.horizontal)
+		}
 
-	// The maximum number of characters any row will display
-	// For example, the header, line beneath the header, and the table footer
-	total_number_of_runes_per_row :=
-	runes_per_row_without_decorations_or_space_offsets +
-	number_of_border_decorations_per_row +
-	number_of_vertical_delimiters_per_row +
-	number_of_leading_whitespaces_per_row
-
-	table := strings.builder_make(0, total_number_of_runes_per_row * number_of_rows)
+		if column_position <= number_of_columns - 2 {
+			// strings.write_rune(&table, '|')
+			strings.write_rune(&sb, args.table_runes.horizontal)
+		}
+	}
+	border_horizontal_data_cell_content := strings.to_string(sb)
 
 	//
 	// DRAW: table northern border
 	//
-	table_border_north := decorate_table_line(
-	total_number_of_runes_per_row,
-	args.table_runes.corner_north_west,
-	args.table_runes.horizontal,
-	args.table_runes.corner_north_east
-	)
-	strings.write_string(&table, table_border_north)
+	strings.write_rune(&table, args.table_runes.corner_north_west)
+	strings.write_string(&table, border_horizontal_data_cell_content)
+	strings.write_rune(&table, args.table_runes.corner_north_east)
 	strings.write_byte(&table, LITERAL_NEWLINE)
 
 	//
@@ -111,9 +117,8 @@ args: types.ProgramArgs) -> string {
 
 		number_of_spaces := widest_column_size - strings.rune_count(column_header)
 
-		strings.write_byte(&table, LITERAL_WHITESPACE) // Just padding
 		strings.write_string(&table, column_header)
-		whitespace := strings.repeat(" ", number_of_spaces)
+		whitespace := strings.repeat("x", number_of_spaces)
 		strings.write_string(&table, whitespace)
 
 		strings.write_rune(&table, args.table_runes.vertical)
@@ -125,14 +130,9 @@ args: types.ProgramArgs) -> string {
 	// DRAW: column footer row
 	//
 	if args.should_decorate_table_footer_row {
-		table_footer_row := decorate_table_line(
-		total_number_of_runes_per_row,
-		args.table_runes.column_footer_three_way_intersection_west,
-		args.table_runes.horizontal,
-		args.table_runes.column_footer_three_way_intersection_east
-		)
-
-		strings.write_string(&table, table_footer_row)
+		strings.write_rune(&table, args.table_runes.column_footer_three_way_intersection_west)
+		strings.write_string(&table, border_horizontal_data_cell_content)
+		strings.write_rune(&table, args.table_runes.column_footer_three_way_intersection_east)
 		strings.write_byte(&table, LITERAL_NEWLINE)
 	}
 
@@ -143,8 +143,8 @@ args: types.ProgramArgs) -> string {
 	for parsed_data_count := number_of_columns; parsed_data_count < len(parsed_data); parsed_data_count += 1 {
 		data_cell_element := parsed_data[parsed_data_count]
 
-		should_print_on_newline := column_counter == number_of_columns
-		if should_print_on_newline {
+		is_last_element_and_should_print_newline := column_counter == number_of_columns
+		if is_last_element_and_should_print_newline {
 			column_counter = 0
 			strings.write_byte(&table, LITERAL_NEWLINE)
 		}
@@ -156,10 +156,13 @@ args: types.ProgramArgs) -> string {
 
 		runes_in_data_cell_element := strings.rune_count(data_cell_element)
 		number_of_trailing_spaces := widest_column_size - runes_in_data_cell_element
+		if 0 == number_of_trailing_spaces {
+			number_of_trailing_spaces = 0
+		}
+		fmt.printfln("number_of_trailing_spaces: %i", number_of_trailing_spaces)
 
-		strings.write_byte(&table, LITERAL_WHITESPACE) // Just padding
 		strings.write_string(&table, data_cell_element)
-		whitespace_padding := strings.repeat(" ", number_of_trailing_spaces)
+		whitespace_padding := strings.repeat("x", number_of_trailing_spaces)
 		strings.write_string(&table, whitespace_padding)
 
 		strings.write_rune(&table, args.table_runes.vertical)
@@ -172,13 +175,9 @@ args: types.ProgramArgs) -> string {
 	//
 	// DRAW: table southern border
 	//
-	table_border_southern_line := decorate_table_line(
-	total_number_of_runes_per_row,
-	args.table_runes.corner_south_west,
-	args.table_runes.horizontal,
-	args.table_runes.corner_south_east
-	)
-	strings.write_string(&table, table_border_southern_line)
+	strings.write_rune(&table, args.table_runes.corner_south_west)
+	strings.write_string(&table, border_horizontal_data_cell_content)
+	strings.write_rune(&table, args.table_runes.corner_south_east)
 	strings.write_byte(&table, LITERAL_NEWLINE)
 
 
@@ -199,7 +198,7 @@ count_number_of_columns :: proc (row: string) -> int {
 	return number_of_commas + 1
 }
 
-get_max_col_width :: proc (data: []string) -> int {
+get_max_column_width :: proc (data: []string) -> int {
 	current_max_width := 0
 
 	for data_element in data {
@@ -211,20 +210,4 @@ get_max_col_width :: proc (data: []string) -> int {
 	}
 
 	return current_max_width
-}
-
-decorate_table_line :: proc (total_length_of_row: int, decorator_start, decorator_middle, decorator_end: rune) -> string {
-// TODO: Determine whether this should be initialized with
-// total_length_of_row + 1 as the length
-	decorator := strings.builder_make_len_cap(0, total_length_of_row)
-
-	strings.write_rune(&decorator, decorator_start)
-
-	for counter := 0; counter < total_length_of_row; counter += 1 {
-		strings.write_rune(&decorator, decorator_middle)
-	}
-
-	strings.write_rune(&decorator, decorator_end)
-
-	return strings.to_string(decorator)
 }
