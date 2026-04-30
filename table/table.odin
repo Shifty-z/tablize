@@ -85,20 +85,20 @@ args: types.ProgramArgs) -> string {
 	// Horizontal border data cells all use the same rune the same number of times (widest_column_size)
 	// so convert that into a reusable string
 	//
-	sb := strings.builder_make() // TODO: Rename this variable.
-	defer strings.builder_destroy(&sb)
+	horizontal_line_builder := strings.builder_make()
+	defer strings.builder_destroy(&horizontal_line_builder)
 	for column_position := 0; column_position < number_of_columns; column_position += 1 {
 
 		for fill_position := 0; fill_position < widest_column_size; fill_position += 1 {
-			strings.write_rune(&sb, args.table_runes.horizontal)
+			strings.write_rune(&horizontal_line_builder, args.table_runes.horizontal)
 		}
 
 		if column_position <= number_of_columns - 2 {
 			// strings.write_rune(&table, '|')
-			strings.write_rune(&sb, args.table_runes.horizontal)
+			strings.write_rune(&horizontal_line_builder, args.table_runes.horizontal)
 		}
 	}
-	border_horizontal_data_cell_content := strings.to_string(sb)
+	border_horizontal_data_cell_content := strings.to_string(horizontal_line_builder)
 
 	//
 	// DRAW: table northern border
