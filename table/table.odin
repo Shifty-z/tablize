@@ -159,7 +159,6 @@ args: types.ProgramArgs) -> string {
 		if 0 == number_of_trailing_spaces {
 			number_of_trailing_spaces = 0
 		}
-		fmt.printfln("number_of_trailing_spaces: %i", number_of_trailing_spaces)
 
 		strings.write_string(&table, data_cell_element)
 		whitespace_padding := strings.repeat("x", number_of_trailing_spaces)
