@@ -8,6 +8,7 @@ import "core:os/os2"
 LITERAL_NEWLINE :: '\n'
 LITERAL_WHITESPACE :: ' '
 LITERAL_COMMA :: ','
+STRING_LITERAL_COMMA :: ","
 
 create :: proc (unparsed_csv_data: string) -> (parsed_data: []string, number_of_rows: int, number_of_columns: int) {
 	lines, error_allocation := strings.split_lines(unparsed_csv_data)
@@ -28,8 +29,6 @@ create :: proc (unparsed_csv_data: string) -> (parsed_data: []string, number_of_
 }
 
 parse_csv_lines :: proc (csv_lines: ^[]string, number_of_rows, number_of_columns: int) -> []string {
-// You know how many rows and columns you have, so create a container
-// already allocated with the correct size.
 	array_length := number_of_columns * number_of_rows
 	parsed_data := make([]string, array_length)
 
@@ -40,17 +39,17 @@ parse_csv_lines :: proc (csv_lines: ^[]string, number_of_rows, number_of_columns
 
 	parsed_data_index := 0
 	for line in csv_lines {
-		csv_header, error_splitting_string := strings.split(line, ",")
-		defer delete(csv_header)
+		csv_value, error_splitting_string := strings.split(line, STRING_LITERAL_COMMA)
+		defer delete(csv_value)
 
 		if nil != error_splitting_string {
 			fmt.printfln("ERROR\n TYPE: STRING MANIPULATION - SPLITTING\n REASON: %#v", error_splitting_string)
 			continue
 		}
 
-		for header_counter := 0; header_counter < len(csv_header); header_counter += 1 {
+		for value_position := 0; value_position < len(csv_value); value_position += 1 {
 			strings.write_rune  (&data_cell_builder, LITERAL_WHITESPACE)
-			strings.write_string(&data_cell_builder, csv_header[header_counter])
+			strings.write_string(&data_cell_builder, csv_value[value_position])
 			strings.write_rune  (&data_cell_builder, LITERAL_WHITESPACE)
 
 			// Clone the result of to_string to "own" the string, and because string
