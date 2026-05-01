@@ -117,7 +117,7 @@ args: types.ProgramArgs) -> string {
 		number_of_spaces := widest_column_size - strings.rune_count(column_header)
 
 		strings.write_string(&table, column_header)
-		whitespace := strings.repeat(" ", number_of_spaces) // TODO: Back to whitespace
+		whitespace := strings.repeat(" ", number_of_spaces)
 		strings.write_string(&table, whitespace)
 
 		strings.write_rune(&table, args.table_runes.vertical)
