@@ -118,7 +118,7 @@ args: types.ProgramArgs) -> string {
 		number_of_spaces := widest_column_size - strings.rune_count(column_header)
 
 		strings.write_string(&table, column_header)
-		whitespace := strings.repeat("x", number_of_spaces)
+		whitespace := strings.repeat(" ", number_of_spaces) // TODO: Back to whitespace
 		strings.write_string(&table, whitespace)
 
 		strings.write_rune(&table, args.table_runes.vertical)
@@ -161,7 +161,7 @@ args: types.ProgramArgs) -> string {
 		}
 
 		strings.write_string(&table, data_cell_element)
-		whitespace_padding := strings.repeat("x", number_of_trailing_spaces)
+		whitespace_padding := strings.repeat(" ", number_of_trailing_spaces)
 		strings.write_string(&table, whitespace_padding)
 
 		strings.write_rune(&table, args.table_runes.vertical)
