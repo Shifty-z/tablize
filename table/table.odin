@@ -69,36 +69,51 @@ parse_csv_lines :: proc (csv_lines: ^[]string, number_of_rows, number_of_columns
 draw_table :: proc (parsed_data: []string, number_of_rows, number_of_columns: int,
 args: types.ProgramArgs) -> string {
 
+	per_table_count_corners :: 4
+	per_table_count_decoration_lines :: 3 // North border + south border + table column footer
+	per_table_count_column_footer_intersections :: 2
+	per_table_count_newline := per_table_count_decoration_lines + number_of_rows
 	per_row_delimiters_vertical := number_of_columns + 1
-	per_row_total_whitespace_leading := number_of_columns
-	per_row_total_whitespace_trailing := number_of_columns
-	widest_column_size := get_max_column_width(parsed_data)
+	per_table_count_vertical_delimiters := (1 + number_of_columns) * number_of_rows
+	size_widest_data_cell := get_max_column_width(parsed_data)
 
-	// This is the number of runes from the CSV file's row. No stylized runes included.
-	per_row_rune_count := number_of_columns * widest_column_size
-	per_row_total_number_of_runes := per_row_total_whitespace_leading +
-	per_row_delimiters_vertical + per_row_rune_count + per_row_total_whitespace_trailing
-
-	table := strings.builder_make(0,  per_row_total_number_of_runes * number_of_rows)
+	per_row_number_of_data_cell_runes := number_of_columns * size_widest_data_cell
+	per_row_total_number_of_runes := per_row_delimiters_vertical + per_row_number_of_data_cell_runes
 
 	//
-	// Horizontal border data cells all use the same rune the same number of times (widest_column_size)
+	// Horizontal border data cells all use the same rune the same number of times (size_widest_data_cell)
 	// so convert that into a reusable string
 	//
 	horizontal_line_builder := strings.builder_make()
 	defer strings.builder_destroy(&horizontal_line_builder)
 	for column_position := 0; column_position < number_of_columns; column_position += 1 {
 
-		for fill_position := 0; fill_position < widest_column_size; fill_position += 1 {
+		for fill_position := 0; fill_position < size_widest_data_cell; fill_position += 1 {
 			strings.write_rune(&horizontal_line_builder, args.table_runes.horizontal)
 		}
 
+		// Where | would normally be, put a horizontal rune
 		if column_position <= number_of_columns - 2 {
-			// strings.write_rune(&table, '|')
+			// strings.write_rune(&horizontal_line_builder, '|')
 			strings.write_rune(&horizontal_line_builder, args.table_runes.horizontal)
 		}
 	}
 	table_horizontal_line_without_corners := strings.to_string(horizontal_line_builder)
+
+	per_table_count_horizontal_lines := per_table_count_decoration_lines * (strings.rune_count(table_horizontal_line_without_corners))
+	per_table_sum_of_data_cell_sizes := number_of_rows * (size_widest_data_cell * number_of_columns)
+
+	//
+	// Calculate the total number of runes for the table
+	//
+	per_table_expected_size := per_table_count_newline +
+	per_table_count_corners +
+	per_table_count_vertical_delimiters +
+	per_table_count_column_footer_intersections +
+	per_table_sum_of_data_cell_sizes +
+	per_table_count_horizontal_lines
+
+	table := strings.builder_make(0,  per_table_expected_size)
 
 	//
 	// DRAW: table northern border
@@ -115,10 +130,10 @@ args: types.ProgramArgs) -> string {
 	for column_header_position := 0; column_header_position < number_of_columns; column_header_position += 1 {
 		column_header := parsed_data[column_header_position]
 
-		number_of_spaces := widest_column_size - strings.rune_count(column_header)
+		number_of_spaces := size_widest_data_cell - strings.rune_count(column_header)
 
 		strings.write_string(&table, column_header)
-		whitespace := strings.repeat(" ", number_of_spaces)
+		whitespace := strings.repeat(STRING_LITERAL_WHITESPACE, number_of_spaces)
 		strings.write_string(&table, whitespace)
 
 		strings.write_rune(&table, args.table_runes.vertical)
@@ -155,13 +170,13 @@ args: types.ProgramArgs) -> string {
 		}
 
 		runes_in_data_cell_element := strings.rune_count(data_cell_element)
-		number_of_trailing_spaces := widest_column_size - runes_in_data_cell_element
+		number_of_trailing_spaces := size_widest_data_cell - runes_in_data_cell_element
 		if 0 == number_of_trailing_spaces {
 			number_of_trailing_spaces = 0
 		}
 
 		strings.write_string(&table, data_cell_element)
-		whitespace_padding := strings.repeat(" ", number_of_trailing_spaces)
+		whitespace_padding := strings.repeat(STRING_LITERAL_WHITESPACE, number_of_trailing_spaces)
 		strings.write_string(&table, whitespace_padding)
 
 		strings.write_rune(&table, args.table_runes.vertical)
@@ -178,7 +193,6 @@ args: types.ProgramArgs) -> string {
 	strings.write_string(&table, table_horizontal_line_without_corners)
 	strings.write_rune(&table, args.table_runes.corner_south_east)
 	strings.write_byte(&table, LITERAL_NEWLINE)
-
 
 	return strings.to_string(table)
 }
