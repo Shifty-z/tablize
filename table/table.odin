@@ -9,6 +9,7 @@ LITERAL_NEWLINE :: '\n'
 LITERAL_WHITESPACE :: ' '
 LITERAL_COMMA :: ','
 STRING_LITERAL_COMMA :: ","
+STRING_LITERAL_WHITESPACE :: " "
 
 create :: proc (unparsed_csv_data: string) -> (parsed_data: []string, number_of_rows: int, number_of_columns: int) {
 	lines, error_allocation := strings.split_lines(unparsed_csv_data)
@@ -38,18 +39,18 @@ parse_csv_lines :: proc (csv_lines: ^[]string, number_of_rows, number_of_columns
 	defer strings.builder_destroy(&data_cell_builder)
 
 	parsed_data_index := 0
-	for line in csv_lines {
-		csv_value, error_splitting_string := strings.split(line, STRING_LITERAL_COMMA)
-		defer delete(csv_value)
+	for csv_line in csv_lines {
+		csv_values, error_splitting_string := strings.split(csv_line, STRING_LITERAL_COMMA)
+		defer delete(csv_values)
 
 		if nil != error_splitting_string {
 			fmt.printfln("ERROR\n TYPE: STRING MANIPULATION - SPLITTING\n REASON: %#v", error_splitting_string)
 			continue
 		}
 
-		for value_position := 0; value_position < len(csv_value); value_position += 1 {
+		for value_position := 0; value_position < len(csv_values); value_position += 1 {
 			strings.write_rune  (&data_cell_builder, LITERAL_WHITESPACE)
-			strings.write_string(&data_cell_builder, csv_value[value_position])
+			strings.write_string(&data_cell_builder, csv_values[value_position])
 			strings.write_rune  (&data_cell_builder, LITERAL_WHITESPACE)
 
 			// Clone the result of to_string to "own" the string, and because string
