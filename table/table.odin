@@ -197,6 +197,163 @@ args: types.ProgramArgs) -> string {
 	return strings.to_string(table)
 }
 
+// Outputs a table that has column-relative maximum widths rather than table-relative maximum widths.
+// See README for an example.
+draw_table_column_relative_size :: proc (parsed_data: []string, number_of_rows, number_of_columns: int,
+args: types.ProgramArgs) -> string {
+	//
+	// Determine how many runes wide each column should be
+	//
+	size_of_columns := make([]int, number_of_columns)
+	column_counter := 0
+	for position_column := 0; position_column < len(parsed_data); position_column += 1 {
+
+		is_last_column_in_row := column_counter == number_of_columns
+		if is_last_column_in_row {
+			column_counter = 0
+		}
+
+		per_column_max_size := size_of_columns[column_counter]
+		parsed_value := strings.rune_count(parsed_data[position_column])
+
+		if parsed_value > per_column_max_size {
+			size_of_columns[column_counter] = parsed_value
+		}
+
+		column_counter += 1
+	}
+
+	//
+	// Horizontal table line that's re-usable
+	//
+	horizontal_line_builder := strings.builder_make()
+	defer strings.builder_destroy(&horizontal_line_builder)
+
+	for column_position := 0; column_position < number_of_columns; column_position += 1 {
+		size_of_column := size_of_columns[column_position]
+
+		for fill_position := 0; fill_position < size_of_column; fill_position += 1 {
+			strings.write_rune(&horizontal_line_builder, args.table_runes.horizontal)
+		}
+
+		// Where | would normally be, put a horizontal rune
+		if column_position <= number_of_columns - 2 {
+		// strings.write_rune(&table, '|')
+			strings.write_rune(&horizontal_line_builder, args.table_runes.horizontal)
+		}
+	}
+	table_horizontal_line_without_corners := strings.to_string(horizontal_line_builder)
+
+	//
+	// Gather facts about a table to calculate the size of the table
+	//
+	per_table_count_corners :: 4
+	per_table_count_decoration_lines :: 3 // North border + south border + table column footer
+	per_table_count_column_footer_intersections :: 2
+	per_table_count_newline := per_table_count_decoration_lines + number_of_rows
+	per_table_count_vertical_delimiters := (1 + number_of_columns) * number_of_rows
+
+	sum_of_each_column_max_size := 0
+	for column_position := 0; column_position < len(size_of_columns); column_position += 1 {
+		sum_of_each_column_max_size += size_of_columns[column_position]
+	}
+
+	per_table_sum_of_data_cell_sizes := number_of_rows * sum_of_each_column_max_size
+	per_table_count_horizontal_lines := per_table_count_decoration_lines * (strings.rune_count(table_horizontal_line_without_corners))
+
+	//
+	// Calculate the total number of runes for the table
+	//
+	per_table_expected_size := per_table_count_newline +
+	per_table_count_corners +
+	per_table_count_vertical_delimiters +
+	per_table_count_column_footer_intersections +
+	per_table_sum_of_data_cell_sizes +
+	per_table_count_horizontal_lines
+
+	table := strings.builder_make(0, per_table_expected_size)
+
+	//
+	// DRAW: Table border north
+	//
+	strings.write_rune(&table, args.table_runes.corner_north_west)
+	strings.write_string(&table, table_horizontal_line_without_corners)
+	strings.write_rune(&table, args.table_runes.corner_north_east)
+	strings.write_byte(&table, LITERAL_NEWLINE)
+
+	//
+	// DRAW: Column headers
+	//
+	strings.write_rune(&table, args.table_runes.vertical)
+	for column_header_position := 0; column_header_position < number_of_columns; column_header_position += 1 {
+		column_header := parsed_data[column_header_position]
+
+		number_of_spaces := size_of_columns[column_header_position] - strings.rune_count(column_header)
+
+		strings.write_string(&table, column_header)
+		whitespace := strings.repeat(STRING_LITERAL_WHITESPACE, number_of_spaces)
+		strings.write_string(&table, whitespace)
+
+		strings.write_rune(&table, args.table_runes.vertical)
+	}
+	strings.write_byte(&table, LITERAL_NEWLINE)
+
+	//
+	// DRAW: Column footer row
+	//
+	if args.should_decorate_table_footer_row {
+		strings.write_rune(&table, args.table_runes.column_footer_three_way_intersection_west)
+		strings.write_string(&table, table_horizontal_line_without_corners)
+		strings.write_rune(&table, args.table_runes.column_footer_three_way_intersection_east)
+		strings.write_byte(&table, LITERAL_NEWLINE)
+	}
+
+	//
+	// DRAW: Table body content
+	//
+	column_counter = 0
+	for parsed_data_count := number_of_columns; parsed_data_count < len(parsed_data); parsed_data_count += 1 {
+
+		is_last_element_and_should_print_newline := column_counter == number_of_columns
+		if is_last_element_and_should_print_newline {
+			column_counter = 0
+			strings.write_byte(&table, LITERAL_NEWLINE)
+		}
+		size_widest_data_cell := size_of_columns[column_counter]
+
+		is_first_element_in_row_and_should_print_vertical_rune := 0 == column_counter
+		if is_first_element_in_row_and_should_print_vertical_rune {
+			strings.write_rune(&table, args.table_runes.vertical)
+		}
+
+		data_cell_element := parsed_data[parsed_data_count]
+		runes_in_data_cell_element := strings.rune_count(data_cell_element)
+		number_of_trailing_spaces := size_widest_data_cell - runes_in_data_cell_element
+		if 0 == number_of_trailing_spaces {
+			number_of_trailing_spaces = 0
+		}
+
+		strings.write_string(&table, data_cell_element)
+		whitespace_padding := strings.repeat(STRING_LITERAL_WHITESPACE, number_of_trailing_spaces)
+		strings.write_string(&table, whitespace_padding)
+
+		strings.write_rune(&table, args.table_runes.vertical)
+
+		column_counter += 1
+	}
+	strings.write_byte(&table, LITERAL_NEWLINE)
+
+	//
+	// DRAW: Table southern border
+	//
+	strings.write_rune(&table, args.table_runes.corner_south_west)
+	strings.write_string(&table, table_horizontal_line_without_corners)
+	strings.write_rune(&table, args.table_runes.corner_south_east)
+	strings.write_byte(&table, LITERAL_NEWLINE)
+
+	return strings.to_string(table)
+}
+
 count_number_of_columns :: proc (row: string) -> int {
 	number_of_commas := 0
 
